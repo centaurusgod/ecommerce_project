@@ -6,19 +6,18 @@ $user_id = $_SESSION['user_id'];
 ?>
 
 <?php
-$product_id=$_GET['product_id'];
-$fill_product_query="select * from product where product_id='$product_id'";
-$fill_result=mysqli_query($con,$fill_product_query);
-while($row=mysqli_fetch_assoc($fill_result)){
-$supplier_id=$row['supplier_id'];
-$product_id=$row['product_id'];
-$product_title=$row['product_title'];
-$product_image=$row['product_image'];
-$product_price=$row['product_price'];
-$product_stock_number=$row['product_stock_number'];
-$category_pass_name=$row['category_name'];
-$product_details=$row['product_details'];
-
+$product_id = $_GET['product_id'];
+$fill_product_query = "select * from product where product_id='$product_id'";
+$fill_result = mysqli_query($con, $fill_product_query);
+while ($row = mysqli_fetch_assoc($fill_result)) {
+    $supplier_id = $row['supplier_id'];
+    $product_id = $row['product_id'];
+    $product_title = $row['product_title'];
+    $fetched_product_image = $row['product_image'];
+    $product_price = $row['product_price'];
+    $product_stock_number = $row['product_stock_number'];
+    $category_pass_name = $row['category_name'];
+    $product_details = $row['product_details'];
 }
 ?>
 <!DOCTYPE html>
@@ -47,12 +46,12 @@ $product_details=$row['product_details'];
 
             <form action="" class="mb-5" method="POST" enctype="multipart/form-data">
                 <div class="d-flex justify-content-center items-center mt-4 w-full h-50  rounded border border-gray border-2">
-                    <img src="../productimages/<?php  echo $product_image;?>" style="object-fit:cover" id="img-preview" class="img-fluid rounded shadow-sm w-full h-full">
+                    <img src="../productimages/<?php echo $fetched_product_image; ?>" style="object-fit:cover" id="img-preview" class="img-fluid rounded shadow-sm w-full h-full">
                 </div>
 
                 <div class="input-box mt-2 ">
 
-                    <input type="file" id="imgFile" name="product_image" accept="image/*" onchange="showPreview(event)"  style="opacity:1;">
+                    <input type="file" id="imgFile" name="product_image" accept="image/*" onchange="showPreview(event)" style="opacity:1;">
 
                 </div>
 
@@ -60,38 +59,41 @@ $product_details=$row['product_details'];
                     <input type="text" id="form5Example1" name="product_title" value="<?php echo $product_title; ?>" class="form-control" placeholder="Product Name" maxlength="50" required />
                 </div>
                 <div class="form-group mt-4">
-                    <textarea rows="5" class="form-control" name="product_details"  placeholder="Describe about product" maxlength="300"> <?php echo $product_details; ?></textarea>
+                    <textarea rows="5" class="form-control" name="product_details" placeholder="Describe about product" maxlength="300"> <?php echo $product_details; ?></textarea>
                 </div>
                 <div class="form-outline mt-4">
-                    <input type="number" id="" class="form-control" name="product_price" value="<?php echo $product_price; ?>"placeholder="Product Price" pattern="\d*" maxlength="7" required />
+                    <input type="number" id="" class="form-control" name="product_price" value="<?php echo $product_price; ?>" placeholder="Product Price" pattern="\d*" maxlength="7" required />
                 </div>
                 <div class="form-outline mt-4">
-                    <input type="number" id="" class="form-control" name="product_stock_number" value="<?php echo $product_stock_number; ?>"placeholder="Available products" pattern="\d*" maxlength="7" required />
+                    <input type="number" id="" class="form-control" name="product_stock_number" value="<?php echo $product_stock_number; ?>" placeholder="Available products" pattern="\d*" maxlength="7" required />
                 </div>
 
                 <div class='form-group mt-4'>
                     <select class='form-control' id='sel1' name="category_name">
-                    <?php
-                    $get_category_list_query = "select * from category";
 
-                    $result_category = mysqli_query($con, $get_category_list_query);
-                    if ($result_category) {
-                        while ($row = mysqli_fetch_assoc($result_category)) {
-                            $category_name = $row['category_name'];
-                            echo "
-               
-                <option selected>$category_name</option>
-         
-                ";
+                        <?php
+                        $get_category_list_query = "select * from category";
+
+                        $result_category = mysqli_query($con, $get_category_list_query);
+
+                        if ($result_category) {
+                            while ($row = mysqli_fetch_assoc($result_category)) {
+                                $category_name = $row['category_name'];
+                                if ($category_name == $category_pass_name) {
+                                    // to select the category item by default
+                                    echo " <option selected>$category_name</option>";
+                                } else {
+
+                                    echo " <option >$category_name</option>";
+                                }
+                            }
                         }
-                    }
-                    ?>
-    
-    </select>
-                </div>
+                        ?>
 
+                    </select>
+                </div>
                 <div class="form-outline mt-4">
-                    <input type="submit"  class="form-control" name="insert_botton" value="Add Product" />
+                    <input type="submit" class="form-control" name="insert_botton" value="Add Product" />
                 </div>
 
 
@@ -113,50 +115,47 @@ $product_details=$row['product_details'];
     </script>
     <div>
         <?php
-        ///put the values of the products into the database
+        // ///put the values of the products into the database
         if (isset($_POST['insert_botton'])) {
 
             $product_title = $_POST['product_title'];
             $product_price = (int)$_POST['product_price'];
             $product_details = $_POST['product_details'];
             $category_name = $_POST['category_name'];
-            
-        $product_stock_number = $_POST['product_stock_number'];
+
+            $product_stock_number = $_POST['product_stock_number'];
 
 
-        // find supplier id from user_id
-        $get_supplier_id="select supplier_id from supplier where user_id='$user_id'";
-        $get_supplier_id_result=mysqli_query($con,$get_supplier_id);
-        $row=mysqli_fetch_array($get_supplier_id_result);
-        $supplier_id=$row['supplier_id'];
-        if(isset($_FILES['product_image']['name'])){
-        echo "file  set";
-        $product_image = $user_id.time().$_FILES['product_image']['name'];
+            // find supplier id from user_id
+            $get_supplier_id = "select supplier_id from supplier where user_id='$user_id'";
+            $get_supplier_id_result = mysqli_query($con, $get_supplier_id);
+            $row = mysqli_fetch_array($get_supplier_id_result);
+            $supplier_id = (int)$row['supplier_id'];
 
-        $product_temp_image = $_FILES['product_image']['tmp_name'];
-        
-        move_uploaded_file($product_temp_image, "../productimages/$product_image");
-        echo "<script>alert('Insertion Sucessful')</script>";
+            $product_image = $_FILES['product_image']['name'];
+
+            $product_temp_image = $_FILES['product_image']['tmp_name'];
+            if ($product_image == "" or $product_image == NULL) {
+                $product_image = $fetched_product_image;
+            } else {
+                $product_image = $user_id . time() . $_FILES['product_image']['name'];
+                $product_temp_image = $_FILES['product_image']['tmp_name'];
+            }
 
 
-        }
-        else{
-            echo "file not set";
-           
-        }
+            // to acess product_images and urls or what we are learning
 
-           // to acess product_images and urls or what we are learning
-           
-            $insert_product_query = "insert into product(supplier_id, product_title, product_price, product_image, category_name, product_details,product_stock_number) values('$supplier_id','$product_title','$product_price','$product_image','$category_name','$product_details','$product_stock_number')";
-            // $remove_product_query = "delete from product where product_image='$product_image'";
-            $result = mysqli_query($con, $insert_product_query);
+            $edit_product_query = "update product set product_title='$product_title', product_image='$product_image', product_price='$product_price', product_stock_number='$product_stock_number', category_name='$category_name', product_details='$product_details' where product_id=$product_id";           // $remove_product_query = "delete from product where product_image='$product_image'";
+        // $edit_product_query="update product set product_price='$product_price', product_stock_number='$product_stock_number' where product_id='$product_id'";  
+         $result = mysqli_query($con, $edit_product_query);
             if (!$result) {
-                echo '<script>alert("' . mysqli_error($con) . '.");</script>';
-                echo "<script>window.open('./create_product.php')</script>";
+                echo mysqli_error($con);
+                echo '<script>alert("Database syntax error");</script>';
+              //  echo "<script>window.open('./create_product.php')</script>";
                 // mysqli_query($con,$remove_product_query); 
             } else {
-                
-                // echo "<script>window.open('./create_product.php')</script>";
+                 move_uploaded_file($product_temp_image, "../productimages/$product_image");
+                 echo "<script>window.open('./products.php')</script>";
             }
 
             // acessing image tep names
